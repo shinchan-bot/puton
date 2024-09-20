@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "rm -rf dist && ts-node-dev --respawn --transpile-only source"
+    "start": "rm -rf dist && ts-node-dev --respawn --transpile-only source",
+    "dev": "nodemon source/index.ts"
   },
   "author": "",
   "license": "ISC",
