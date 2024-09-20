@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  USER
+  VENDOR
+  DELIVERY_PARTNER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHERS
+}
+
+model User {
+  id          Int      @id @default(autoincrement()) // Primary key
+  name        String
+  email       String?  @unique
+  phone       String   @unique
+  avatar      String?
+  userType    UserType @default(USER)
+  gender      Gender
+  accessToken String?
+  isActive    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  otps Otp[] // Relation to the Otp model (One-to-Many)
+
+  @@map("users") // Optional: maps the model to the "users" table in PostgreSQL
+}
+
+model Otp {
+  id        Int      @id @default(autoincrement()) // Primary key for the OTP table
+  otp       String // The OTP value
+  userId    Int      @unique // Foreign key referencing the User table
+  createdAt DateTime @default(now()) // Timestamp of OTP creation
+  expiresAt DateTime // Timestamp when the OTP expires
+
+  // Relation with the User table
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("otps") // Optional: maps the model to the "otps" table in PostgreSQL
+}
