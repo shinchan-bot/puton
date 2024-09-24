@@ -27,17 +27,17 @@ enum Gender {
 
 model User {
   id          Int      @id @default(autoincrement()) // Primary key
-  name        String
+  name        String?
   email       String?  @unique
-  phone       String   @unique
+  phone       String?   @unique
   avatar      String?
   userType    UserType @default(USER)
-  gender      Gender
+  gender      Gender?
   accessToken String?
   isActive    Boolean  @default(true)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime? @updatedAt
 
   otps Otp[] // Relation to the Otp model (One-to-Many)
 
@@ -46,6 +46,7 @@ model User {
 
 model Otp {
   id        Int      @id @default(autoincrement()) // Primary key for the OTP table
+  phone     String?   @unique
   otp       String // The OTP value
   userId    Int      @unique // Foreign key referencing the User table
   createdAt DateTime @default(now()) // Timestamp of OTP creation
