@@ -10,7 +10,7 @@
 CREATE TYPE "UserType" AS ENUM ('USER', 'VENDOR', 'DELIVERY_PARTNER');
 
 -- CreateEnum
-CREATE TYPE "Gender" AS ENUM ('MALE', 'FEMALE', 'OTHERS');
+CREATE TYPE "Gender" AS ENUM ('MALE', 'FEMALE', 'OTHER');
 
 -- AlterTable
 ALTER TABLE "users" DROP COLUMN "isDeleted",
