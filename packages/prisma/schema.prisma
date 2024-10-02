@@ -22,7 +22,7 @@ enum UserType {
 enum Gender {
   MALE
   FEMALE
-  OTHERS
+  OTHER
 }
 
 model User {
