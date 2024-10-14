@@ -29,14 +29,14 @@ model User {
   id           Int      @id @default(autoincrement()) // Primary key
   name         String?
   email        String?  @unique
-  phone        String?  @unique
+  phone        String   @unique
   avatar       String?
   userType     UserType @default(USER)
   gender       Gender?
+  otp          Otp?
   accessToken  String?
   isActive     Boolean  @default(true)
-  measurements Json
-  otpId        Int      @unique
+  measurements Json?
   addressId    Int?     @unique
   avatarId     Int?     @unique
 
@@ -44,7 +44,6 @@ model User {
   updatedAt DateTime? @updatedAt
 
   //Relation to the other tables
-  otp          Otp            @relation(fields: [otpId], references: [id])
   address      Address?       @relation(fields: [addressId], references: [id])
   userAvatar   UserAvatar?    @relation(fields: [avatarId], references: [id])
   wishlistItem WishlistItem[]
@@ -59,10 +58,13 @@ model User {
 
 model Otp {
   id        Int      @id @default(autoincrement()) // Primary key for the OTP table
+  userId    Int      @unique
   otp       String // The OTP value
+  phone     String   @unique
   createdAt DateTime @default(now()) // Timestamp of OTP creation
   expiresAt DateTime // Timestamp when the OTP expires
-  user      User?
+
+  user User @relation(fields: [userId], references: [id])
 
   @@map("otps") // Optional: maps the model to the "otps" table in PostgreSQL
 }
@@ -143,7 +145,7 @@ model Delivery {
   order             Order @relation(fields: [orderId], references: [id])
 
   DeliveryItems DeliveryItems[]
-  user              User  @relation(fields: [deliveryPartnerId],references: [id])
+  user          User            @relation(fields: [deliveryPartnerId], references: [id])
 }
 
 model DeliveryItems {
