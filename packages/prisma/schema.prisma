@@ -71,23 +71,26 @@ model Otp {
 
 model WishlistItem {
   id        Int      @id @default(autoincrement())
-  userId    Int      @unique
+  userId    Int
   createdAt DateTime @default(now())
   productId Int
 
-  //Relation with Product table
-  product   Product  @relation(fields: [productId], references: [id])
-  //Relation with the User table
-  user      User     @relation(fields: [userId], references: [id])
+  @@unique([userId, productId])
+  product Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
 }
 
 model CartItem {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    Int      
   createdAt DateTime @default(now())
+  quantity  Int
+  productId Int
 
-  //Relation with the User table
-  user User @relation(fields: [userId], references: [id])
+  @@unique([userId, productId])
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 }
 
 model Address {
@@ -221,6 +224,7 @@ model Product {
   subcategory    Subcategory      @relation(fields: [subcategoryId], references: [id])
   deliveryItems  DeliveryItems[]
   wishlistItem   WishlistItem[]
+  cartItem       CartItem[]
 }
 
 model Brand {
