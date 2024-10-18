@@ -41,8 +41,10 @@ class WishlistController {
             //TODO: Add token expiry check
             const wishlistItem = await prisma.wishlistItem.upsert({
                 where: {
-                    userId: userId,
-                    productId: productId
+                    userId_productId: { 
+                        userId: userId,
+                        productId: productId 
+                    }
                 },
                 update: {},
                 create: {
@@ -88,7 +90,7 @@ class WishlistController {
             });
 
             if(!wishlistItem) {
-                return res.status(200).send("Wishlist is Empty.")
+                return res.status(200).json({});
             }
             return res.status(200).json(wishlistItem);            
 
