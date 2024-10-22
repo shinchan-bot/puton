@@ -38,20 +38,20 @@ model User {
   isActive     Boolean  @default(true)
   measurements Json?
   addressId    Int?     @unique
-  avatarId     Int?     @unique
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 
   //Relation to the other tables
-  address      Address?       @relation(fields: [addressId], references: [id])
-  userAvatar   UserAvatar?    @relation(fields: [avatarId], references: [id])
-  wishlistItem WishlistItem[]
-  cartItem     CartItem[]
-  order        Order[]
-  store        Store[]
-  product      Product[]
-  delivery     Delivery[]
+  address         Address?          @relation(fields: [addressId], references: [id])
+  wishlistItem    WishlistItem[]
+  cartItem        CartItem[]
+  order           Order[]
+  store           Store[]
+  product         Product[]
+  delivery        Delivery[]
+  userAvatarCache UserAvatarCache[]
+  userAvatar      UserAvatar?
 
   @@map("users") // Optional: maps the model to the "users" table in PostgreSQL
 }
@@ -74,23 +74,23 @@ model WishlistItem {
   userId    Int
   createdAt DateTime @default(now())
   productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, productId])
-  product Product @relation(fields: [productId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
 }
 
 model CartItem {
   id        Int      @id @default(autoincrement())
-  userId    Int      
+  userId    Int
   createdAt DateTime @default(now())
   quantity  Int
   productId Int
 
-  @@unique([userId, productId])
-
   user    User    @relation(fields: [userId], references: [id])
   product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
 }
 
 model Address {
@@ -107,10 +107,30 @@ model Address {
 }
 
 model UserAvatar {
-  id                Int     @id @default(autoincrement())
-  putonProductId    Int?
-  putonProductImage String?
-  user              User?
+  id          Int     @id @default(autoincrement())
+  userId      Int     @unique
+  userImage   String
+  avatarImage String
+  height      Float
+  weight      Float
+  waist       Float
+  chest       Float
+  cupSize     String?
+  skinTone    String
+
+  user        User @relation(fields: [userId], references: [id])
+}
+
+model UserAvatarCache {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  productId   Int
+  CachedImage String?
+  expiresAt   DateTime
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, productId])
 }
 
 model Order {
