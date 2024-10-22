@@ -1,10 +1,12 @@
-import { Request, Response, Router } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 import * as dotenv from "dotenv";
 import logger from "../utils/logger";
 import { isValidPhoneNumber } from "../utils/helper/common-function";
 import { sendOtpPost } from "../utils/otpService";
 dotenv.config();
 import { PrismaClient } from '@prisma/client';
+import { validateVerifyOtp } from "../utils/validation";
+import { generateToken } from "../utils/auth";
 
 const prisma = new PrismaClient();
 
@@ -18,7 +20,8 @@ class LoginController {
 
     public intializeRoutes() {
         this.router.post("/login", this.login);
-        this.router.post("/confirm-otp", this.verifyOtp);
+        this.router.post("/confirm-otp", validateVerifyOtp, this.verifyOtp);
+        this.router.post("/update", this.updateUserDetails)
     }
 
     private login = async (req: Request, res: Response) => {
@@ -142,6 +145,10 @@ class LoginController {
                 user_type: string
             } = req.body;
 
+            if (!phone_number || !otp) {
+                return res.status(400).send({ success: false, message: "Phone number and OTP are required." });
+            }
+
             if (user_type === (process.env.PUTON_USER || "testing")) {
                 if (otp === (process.env.PUTON_TEST_OTP || "230924")) {
                     return res.status(200).send({ success: true, message: "OTP verified successfully." });
@@ -149,11 +156,6 @@ class LoginController {
                     return res.status(200).send({ success: true, message: "Invalid OTP. Please try again." });
                 }
             }
-            // Check if phone number and OTP are provided
-            if (!phone_number || !otp) {
-                return res.status(400).send({ success: false, message: "Phone number and OTP are required." });
-            }
-
             // Check if the OTP exists for the given phone number and userId
             const existingOtp = await prisma.otp.findFirst({
                 where: {
@@ -162,28 +164,60 @@ class LoginController {
                 }
             });
 
-            if (!existingOtp) {
-                return res.status(404).send({ success: false, message: "OTP not found. Please request a new one." });
+            if (existingOtp) {
+                // Check if the OTP has expired
+                const currentTime = new Date();
+
+                if (currentTime < existingOtp.expiresAt) {
+                    existingOtp.expiresAt = currentTime;
+                    const token = generateToken(phone_number, existingOtp.userId)
+                    return res.status(200).send({ success: true, message: "OTP verified successfully.", token: token, valid: true });
+                } else {
+                    return res.status(200).json({ success: false, message: 'OTP Expired.', valid: false });
+                }
+            } else {
+                return res.status(200).json({ message: 'Invalid OTP.', valid: false });
             }
-
-            // Check if the OTP has expired
-            const currentTime = new Date();
-            if (existingOtp.expiresAt < currentTime) {
-                return res.status(400).send({ success: false, message: "OTP has expired. Please request a new one." });
-            }
-
-            // Check if the provided OTP matches the one in the database
-            if (existingOtp.otp !== otp) {
-                return res.status(400).send({ success: false, message: "Invalid OTP. Please try again." });
-            }
-
-            return res.status(200).send({ success: true, message: "OTP verified successfully." });
-
         } catch (error) {
             logger.error(error);
             return res.status(500).send({ success: false, message: "Internal Server Error" });
         }
     };
+
+    private updateUserDetails = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { name, email, userId } = req.body;
+
+            if (!name || !email || !userId) {
+                return res.status(400).send({ success: false, message: "Name, email, and userId are required." });
+            }
+
+            const existingUser = await prisma.user.findUnique({
+                where: {
+                    id: userId,
+                },
+            });
+
+            if (!existingUser) {
+                return res.status(404).send({ success: false, message: "User not found." });
+            }
+
+            const updatedUser = await prisma.user.update({
+                where: {
+                    id: userId,
+                },
+                data: {
+                    name: name,
+                    email: email,
+                },
+            });
+
+            return res.status(200).send({ success: true, user: updatedUser });
+        } catch (error) {
+            logger.error(error);
+            return res.status(500).send({ success: false, message: "Internal Server Error" });
+        }
+    }
 
 }
 

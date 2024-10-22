@@ -3,7 +3,7 @@ import axios from "axios";
 export const sendOtpPost = async (otp: number, phone_number: string, user?: string) => {
     try {
         /** process.env is not working fix it ASAP */
-        if (user === (process.env.PUTON_USER || "testing")) {
+        if (user === (process.env.PUTON_USER || "testing")|| 'coustomer') { // remove coustomer after testing
             console.log(`Development mode: Bypassing OTP service and using static OTP: ${otp}`);
             return { success: true, message: 'OTP sent successfully' };
         }

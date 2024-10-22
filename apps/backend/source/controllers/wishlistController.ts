@@ -15,8 +15,8 @@ class WishlistController {
     }
 
     public initializeRoutes() {
-        this.router.post("/wishlist", this.wishlistAdd);
-        this.router.get("/wishlist", this.wishlist);
+        this.router.post("/add-items", this.wishlistAdd);
+        this.router.get("/get-items", this.wishlist);
     }
 
     private wishlistAdd = async (req: Request, res: Response) => {

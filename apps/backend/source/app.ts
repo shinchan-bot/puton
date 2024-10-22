@@ -1,8 +1,8 @@
 import express, { Express } from "express";
 import cors from "cors";
 import potonRoutes from "./routes/putonApp";
-import putonDeliveryRoutes from "./routes/putonDeliveryApp";
-import putonVendorRoutes from "./routes/putonVendorApp";
+// import putonDeliveryRoutes from "./routes/putonDeliveryApp";
+// import putonVendorRoutes from "./routes/putonVendorApp";
 
 class App {
     public app: Express;
@@ -31,8 +31,6 @@ class App {
 
         /** Load routes */
         potonRoutes(this.app) // main-application
-        putonDeliveryRoutes(this.app) // Delivery-app
-        putonVendorRoutes(this.app) // puton-vendor
 
 
     }
